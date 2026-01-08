@@ -1,42 +1,50 @@
-tree = 3
-sunflower = 3
+#number of columns dedicated to the polyculture (grass,bush,tree,carrot)
+polyculture_col = 3
+#number of collumns dedicated to sunflowers
+sunflower = 3 
 
-def what_to_plant(x,y,plot_size):
-	if (x<tree):
-		plant_tree_grass()
-	elif (x<plot_size-sunflower):
-		plant_pumpkin_cactus(y,plot_size)
-	else:
+def what_to_plant(x,y,plot_size,season,companion):
+	if season == 1:
+		if ((x,y) not in companion):
+			plant_tree_grass_bush_carrot(x,y)
+		else:
+			plant(companion[(x,y)])
+		plant_type, xy = get_companion()   # a = first element, b = second element
+		companion[xy] = plant_type                 # key is second, value is first
+	else: 
 		plant_sunflower()	
 
 def plant_grass():
-	if get_ground_type() == Grounds.Soil:
-		till()
+	plant(Entities.grass)
 
-def plant_tree_grass():
-	if((get_pos_y()+get_pos_x())%2==0):
+def plant_tree_grass_bush_carrot(x,y):
+	if((x+y)%3==0):
 		plant_grass()
+	elif ((x+y+1)%3==0):
+		plant_carrot()
 	else:
 		plant(Entities.Tree)
 
+def plant_carrot():
+	plant(Entities.Carrot)
+
 def plant_pumpkin_cactus(y,plot_size):
 	
-	if (y < plot_size-sunflower-tree):
+	if (y < plot_size-sunflower-polyculture_col):
 		plant(Entities.Pumpkin)
 	else:
 		plant(Entities.Cactus)
 
 def plant_sunflower():
-	if((get_pos_y()+get_pos_x())%2==0):
-		plant(Entities.Sunflower)
-	else:
-		plant(Entities.Carrot)
-	
-def selective_harvest(type):
+	plant(Entities.Sunflower)
+
+#Functions below help to selectively harvest crops
+
+def selective_harvest(type,about_plot,season):
 	if (type == Entities.Pumpkin):
 		can_harvest_pumpkin()
 	elif (type == Entities.sunflower):
-		can_harvest_sunflower()
+		can_harvest_sunflower(about_plot)
 	else: 
 		harvest()
 		
@@ -46,8 +54,10 @@ def can_harvest_pumpkin():
 	else:
 		pass
 		
-def can_harvest_sunflower():
-	if (measure()>=12):
+def can_harvest_sunflower(about_plot):
+	#8x bonus if the sunflower harvested is the biggest sunflower && there are at least 10 sunflowers
+	if (measure()==15): 
+		#The max number of petals a sunflower can have is 15
 		harvest()
 	else:
-		pass	
+		quick_print(about_plot)
